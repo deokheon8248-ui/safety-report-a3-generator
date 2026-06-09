@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>안전보고서 A3 요약본 생성기 | Editor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#2c334a",
+                    "secondary-fixed-dim": "#47e5a4",
+                    "surface-container-low": "#121a2f",
+                    "on-secondary": "#003824",
+                    "on-primary": "#00354a",
+                    "tertiary-container": "#ff975d",
+                    "on-tertiary-fixed-variant": "#783200",
+                    "primary-fixed-dim": "#7bd0ff",
+                    "on-error-container": "#ffdad6",
+                    "on-primary-fixed": "#001e2c",
+                    "surface-variant": "#2c334a",
+                    "outline-variant": "#3d4850",
+                    "on-tertiary": "#552100",
+                    "on-surface": "#d8e1ff",
+                    "on-secondary-container": "#00311f",
+                    "surface-container": "#161e34",
+                    "secondary": "#47e5a4",
+                    "outline": "#86929b",
+                    "on-primary-fixed-variant": "#004c69",
+                    "error": "#ffb4ab",
+                    "surface": "#0a1227",
+                    "tertiary-fixed-dim": "#ffb690",
+                    "tertiary-fixed": "#ffdbca",
+                    "on-secondary-fixed": "#002113",
+                    "on-background": "#d8e1ff",
+                    "inverse-primary": "#00668a",
+                    "surface-container-lowest": "#050d21",
+                    "on-tertiary-container": "#743000",
+                    "primary-fixed": "#c4e7ff",
+                    "on-tertiary-fixed": "#341100",
+                    "surface-container-high": "#21293e",
+                    "surface-dim": "#0a1227",
+                    "primary": "#8ed5ff",
+                    "background": "#0a1227",
+                    "on-primary-container": "#004965",
+                    "tertiary": "#ffbf9e",
+                    "secondary-fixed": "#6bffbf",
+                    "on-secondary-fixed-variant": "#005236",
+                    "on-surface-variant": "#bcc8d2",
+                    "on-error": "#690005",
+                    "inverse-surface": "#d8e1ff",
+                    "secondary-container": "#00a572",
+                    "primary-container": "#31c0ff",
+                    "error-container": "#93000a",
+                    "surface-tint": "#7bd0ff",
+                    "surface-bright": "#30384e",
+                    "inverse-on-surface": "#272f45"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "lg": "40px",
+                    "xl": "64px",
+                    "container-max": "1440px",
+                    "sm": "16px",
+                    "xs": "8px",
+                    "gutter": "24px",
+                    "md": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; vertical-align: middle; }
+        .glass-panel { backdrop-filter: blur(20px); background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(51, 65, 85, 0.5); }
+        .neon-glow { box-shadow: 0 0 15px rgba(142, 213, 255, 0.2); }
+        .neon-glow-primary { box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
+        /* #6 Larger output preview */
+        .a3-preview-container { aspect-ratio: 1.414 / 1; max-width: 1320px; margin: 0 auto; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .custom-slider { -webkit-appearance: none; height: 4px; border-radius: 2px; background: #334155; }
+        .custom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #8ed5ff; cursor: pointer; border: 2px solid #0f172a; box-shadow: 0 0 5px rgba(142, 213, 255, 0.5); }
+
+        /* Future-proof Animations */
+        @keyframes bar-grow {
+            from { transform: scaleY(0); }
+            to { transform: scaleY(1); }
+        }
+        @keyframes scan-line {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        @keyframes glitch {
+            0% { transform: translate(0); opacity: 1; }
+            20% { transform: translate(-2px, 1px); opacity: 0.8; }
+            40% { transform: translate(-2px, -1px); opacity: 1; }
+            60% { transform: translate(2px, 1px); opacity: 0.9; }
+            80% { transform: translate(2px, -1px); opacity: 1; }
+            100% { transform: translate(0); opacity: 1; }
+        }
+        @keyframes pulse-float {
+            0%, 100% { transform: translateY(0); filter: brightness(1); }
+            50% { transform: translateY(-3px); filter: brightness(1.3); }
+        }
+
+        .animate-bar {
+            transform-origin: bottom;
+            animation: bar-grow 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
+        }
+        .scan-effect {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(142, 213, 255, 0.5), transparent);
+            box-shadow: 0 0 8px rgba(142, 213, 255, 0.8);
+            animation: scan-line 3s linear infinite;
+            z-index: 20;
+            pointer-events: none;
+        }
+        .glitch-text {
+            animation: glitch 0.3s ease-in-out;
+        }
+        .bar-hover:hover {
+            animation: pulse-float 1.5s ease-in-out infinite;
+            cursor: pointer;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .animate-bar, .scan-effect, .glitch-text, .bar-hover:hover {
+                animation: none !important;
+                transform: none !important;
+            }
+        }
+
+        /* Editable affordance — visual only on hover/focus */
+        [contenteditable="true"]:hover { outline: 1px dashed rgba(142, 213, 255, 0.35); outline-offset: 2px; border-radius: 2px; }
+        [contenteditable="true"]:focus { outline: 1px solid rgba(142, 213, 255, 0.7); outline-offset: 2px; border-radius: 2px; }
+
+        /* #1 Removable cards — hover delete control (screen only) */
+        .report-card { position: relative; }
+        .card-del {
+            position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
+            display: flex; align-items: center; justify-content: center; border-radius: 9999px;
+            background: rgba(255, 180, 171, 0.18); color: #ffb4ab; opacity: 0;
+            transition: opacity .15s ease; z-index: 30; cursor: pointer;
+            border: 1px solid rgba(255, 180, 171, 0.3);
+        }
+        .report-card:hover .card-del { opacity: 1; }
+        .card-del:hover { background: rgba(255, 180, 171, 0.34); }
+
+        /* #3 Print / PDF — A3 landscape, full content (no bottom clipping) */
+        @media print {
+            @page { size: A3 landscape; margin: 8mm; }
+            html, body { overflow: visible !important; height: auto !important; background: #ffffff !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            header, aside, .fab-btn, .card-del { display: none !important; }
+            .flex.h-screen { display: block !important; height: auto !important; padding: 0 !important; }
+            main { margin: 0 !important; padding: 0 !important; overflow: visible !important; height: auto !important; display: block !important; }
+            .a3-preview-container {
+                aspect-ratio: auto !important;
+                height: auto !important;
+                min-height: 0 !important;
+                max-width: none !important;
+                width: 100% !important;
+                margin: 0 !important;
+                transform: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                overflow: visible !important;
+            }
+            .scan-effect { display: none !important; }
+            [contenteditable="true"]:hover, [contenteditable="true"]:focus { outline: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface overflow-hidden">
+<!-- Top AppBar Component -->
+<header class="fixed top-0 z-50 w-full h-16 bg-surface-container-low flex justify-between items-center px-sm py-xs border-b border-outline-variant shadow-md">
+<div class="flex items-center gap-md">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">안전보고서 A3 요약본 생성기</span>
+</div>
+<div class="flex items-center gap-gutter">
+<div class="flex items-center gap-sm">
+<span class="text-on-surface-variant font-label-caps text-label-caps">확대</span>
+<input id="zoom-slider" class="custom-slider w-32" max="200" min="50" type="range" value="100"/>
+<span id="zoom-label" class="text-on-surface-variant font-body-sm text-body-sm">100%</span>
+<button id="fit-btn" class="px-sm py-1.5 bg-surface-container-highest text-on-surface rounded-lg font-body-sm hover:bg-outline-variant transition-colors">화면맞춤</button>
+</div>
+<div class="flex items-center gap-xs">
+<button id="save-btn" class="flex items-center gap-1.5 px-sm py-2 bg-surface-container-highest text-on-surface rounded-lg font-body-sm hover:shadow-[0_0_15px_rgba(142,213,255,0.3)] transition-all">
+<span class="material-symbols-outlined text-[20px]">save</span> JSON 저장
+                </button>
+<button id="load-btn" class="flex items-center gap-1.5 px-sm py-2 bg-surface-container-highest text-on-surface rounded-lg font-body-sm hover:shadow-[0_0_15px_rgba(142,213,255,0.3)] transition-all">
+<span class="material-symbols-outlined text-[20px]">file_open</span> 불러오기
+                </button>
+<input id="load-input" class="hidden" type="file" accept="application/json,.json"/>
+<button id="reset-btn" class="flex items-center gap-1.5 px-sm py-2 bg-surface-container-highest text-on-surface rounded-lg font-body-sm hover:shadow-[0_0_15px_rgba(142,213,255,0.3)] transition-all">
+<span class="material-symbols-outlined text-[20px]">refresh</span> 초기화
+                </button>
+<button id="print-btn" class="flex items-center gap-1.5 px-md py-2 bg-primary-container text-on-primary-container rounded-lg font-bold font-body-lg active:scale-95 duration-200 shadow-lg">
+<span class="material-symbols-outlined text-[20px]">print</span> 인쇄 / PDF 저장
+                </button>
+</div>
+</div>
+</header>
+<div class="flex h-screen pt-16">
+<!-- Sidebar Navigation & Editor -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-[400px] bg-surface-container/80 backdrop-blur-xl border-r border-outline-variant flex flex-col p-md gap-sm overflow-y-auto scrollbar-hide z-40">
+<div class="mb-xs">
+<h2 class="font-title-md text-title-md font-black text-secondary">Editor Panel</h2>
+<p class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Safety Report Config</p>
+</div>
+<!-- Form Section: Header -->
+<div class="space-y-sm">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">머리말</label>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-sm">
+<p class="text-[12px] text-on-surface-variant mb-2">회사 로고 (이미지 업로드 — 선택)</p>
+<input class="hidden" id="logo-upload" type="file" accept="image/*"/>
+<label class="block w-full py-1.5 px-3 text-center bg-surface-container-highest border border-outline-variant rounded cursor-pointer text-body-sm hover:bg-outline-variant transition-colors" for="logo-upload">파일 선택</label>
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">보고서 제목 (필수)</label>
+<input id="ed-title" class="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-lg px-sm py-2 text-body-lg" type="text" value="옥외작업장 추락재해 예방 개선방안"/>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">부서</label>
+<input id="ed-dept" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-sm py-2 text-body-sm" type="text" value="안전관리팀"/>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">작성일</label>
+<input id="ed-date" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-sm py-2 text-body-sm" type="text" value="2026. 6. 8."/>
+</div>
+</div>
+<!-- #1 Dynamic KPI list (add / delete) -->
+<div>
+<div class="flex items-center justify-between mb-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">핵심 지표 (KPI)</label>
+<button id="add-kpi-btn" class="p-1 bg-secondary-container text-on-secondary-container rounded hover:scale-105 transition-transform" title="지표 추가">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+<div id="ed-kpi-list" class="grid grid-cols-1 gap-2"></div>
+</div>
+</div>
+<!-- Section Editor Area -->
+<div class="mt-sm space-y-sm flex-1">
+<div class="flex items-center justify-between">
+<h3 class="font-title-md text-title-md text-secondary">섹션 내용</h3>
+<button id="add-section-btn" class="p-1 bg-secondary-container text-on-secondary-container rounded hover:scale-105 transition-transform" title="섹션 카드 추가">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<!-- Section editor cards are generated from (and synced to) the output sections -->
+<div id="ed-sections" class="space-y-sm"></div>
+</div>
+<!-- SideNav Footer -->
+<div class="pt-sm border-t border-outline-variant mt-auto flex flex-col gap-xs">
+<button class="flex items-center gap-sm p-2 text-on-surface-variant hover:bg-surface-container-highest/50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</button>
+<button class="flex items-center gap-sm p-2 text-on-surface-variant hover:bg-surface-container-highest/50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-label-caps text-label-caps">Help</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[400px] flex-1 h-full overflow-auto bg-[#0F172A] p-lg flex justify-center">
+<!-- A3 Canvas Container -->
+<div id="a3-canvas" class="a3-preview-container w-full max-w-[1320px] h-fit bg-surface-container-low shadow-2xl rounded-sm overflow-hidden flex flex-col relative">
+<!-- Background Pattern / Atmospheric Glow -->
+<div class="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/5 blur-[120px] rounded-full -mr-20 -mt-20"></div>
+<div class="absolute bottom-0 left-0 w-1/2 h-1/2 bg-secondary/5 blur-[120px] rounded-full -ml-20 -mb-20"></div>
+<!-- Report Header -->
+<div class="h-32 bg-gradient-to-r from-surface-container-high to-surface-container flex items-center px-lg border-b border-outline-variant gap-lg relative z-10">
+<div class="w-32 h-16 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 glass-panel">
+<img id="pv-logo" alt="Logo Placeholder" class="max-h-10 opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA60OZXAZ-bnWMPR1V8mJ7X73uGqiFIs_kjXDwwazpXlm6GqgjBB3MIqGvj-IfqP_srNY-QnzLhBIbwdBQPSpkmKwrNJT7n5bKzkpSS6d__xkNF4OJ6iLuGcX_p_VqYaZHQmAsbO1PNAAWm04OMBjAby3AdQABtCNyM4VyDF_sx-QGb2ieMLCqmSIWvPNx9V26bE_m4a8kgpCXdMj8PBYgxIwQ0pqcTe7Om0aNVnCZwzAb3HCK0flrTF_YBQWohy1JOm8EL84CpoNg"/>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="px-2 py-0.5 bg-primary/20 text-primary-fixed-dim text-[10px] font-bold rounded uppercase tracking-widest">요약 보고서 · SUMMARY</span>
+</div>
+<h1 id="pv-title" class="font-display-lg text-[36px] text-on-surface font-black tracking-tight">옥외작업장 추락재해 예방 개선방안</h1>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant font-label-caps text-[12px] opacity-70">DEPARTMENT: <span id="pv-dept">안전관리팀</span></p>
+<p class="text-on-surface-variant font-label-caps text-[12px] opacity-70">DATE: <span id="pv-date">2026. 06. 08.</span></p>
+</div>
+</div>
+<!-- KPI Cards Section (dynamically managed) -->
+<div id="pv-kpi-grid" class="grid grid-cols-4 gap-md p-md relative z-10">
+<div class="report-card glass-panel p-md rounded-xl text-center neon-glow">
+<p class="kpi-label text-on-surface-variant font-label-caps text-label-caps mb-2">고소작업 수행</p>
+<div class="flex items-baseline justify-center gap-1">
+<span class="kpi-value text-display-lg text-primary font-black">320</span>
+<span class="kpi-unit text-body-lg text-primary opacity-60">건</span>
+</div>
+</div>
+<div class="report-card glass-panel p-md rounded-xl text-center neon-glow">
+<p class="kpi-label text-on-surface-variant font-label-caps text-label-caps mb-2">안전대 착용률</p>
+<div class="flex items-baseline justify-center gap-1">
+<span class="kpi-value text-display-lg text-secondary font-black">78</span>
+<span class="kpi-unit text-body-lg text-secondary opacity-60">%</span>
+</div>
+</div>
+<div class="report-card glass-panel p-md rounded-xl text-center neon-glow">
+<p class="kpi-label text-on-surface-variant font-label-caps text-label-caps mb-2">점검 누락</p>
+<div class="flex items-baseline justify-center gap-1">
+<span class="kpi-value text-display-lg text-tertiary-container font-black">12</span>
+<span class="kpi-unit text-body-lg text-tertiary-container opacity-60">건</span>
+</div>
+</div>
+<div class="report-card glass-panel p-md rounded-xl text-center neon-glow">
+<p class="kpi-label text-on-surface-variant font-label-caps text-label-caps mb-2">재해 감소 목표</p>
+<div class="flex items-baseline justify-center gap-1">
+<span class="kpi-value text-display-lg text-on-surface font-black">50</span>
+<span class="kpi-unit text-body-lg text-on-surface opacity-60">%↓</span>
+</div>
+</div>
+</div>
+<!-- Main Content Grid -->
+<div class="flex-1 grid grid-cols-2 gap-md p-md pt-0 relative z-10">
+<!-- Column Left -->
+<div id="pv-col-left" class="space-y-md">
+<!-- Section 1: Overview (gray box, colored accents) -->
+<div class="report-card section-card glass-panel rounded-xl border-l-4 border-outline-variant" data-section-id="sec1" data-section-style="dot-primary">
+<div class="flex items-center gap-2 p-sm bg-surface-container-highest/40 rounded-t-lg">
+<span class="w-6 h-6 bg-primary text-on-primary text-[12px] font-bold flex items-center justify-center rounded">1</span>
+<span class="material-symbols-outlined text-primary text-[20px]">rocket_launch</span>
+<h3 class="section-title font-title-md text-primary">개요 / 목적</h3>
+</div>
+<div id="pv-sec1-body" class="section-body p-sm text-body-lg space-y-2 text-on-surface-variant">
+<div class="sec-text-row flex items-start gap-2">
+<div class="w-1.5 h-1.5 bg-primary rounded-full mt-2.5"></div>
+<p class="">옥외 고소작업 중 <span class="text-primary font-bold">추락재해</span> 발생 위험성 증가 추세</p>
+</div>
+<div class="sec-text-row flex items-start gap-2">
+<div class="w-1.5 h-1.5 bg-primary rounded-full mt-2.5"></div>
+<p class="">본 보고서는 현장 점검을 통한 <span class="bg-primary/20 text-primary px-1 rounded">예방 대책</span> 수립을 목적으로 함</p>
+</div>
+</div>
+</div>
+<!-- Section 2: Work Status -->
+<div class="report-card section-card glass-panel rounded-xl border-l-4 border-outline-variant" data-section-id="sec2" data-section-style="plain">
+<div class="flex items-center gap-2 p-sm bg-surface-container-highest/40 rounded-t-lg">
+<span class="w-6 h-6 bg-secondary text-on-secondary text-[12px] font-bold flex items-center justify-center rounded">2</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">monitoring</span>
+<h3 class="section-title font-title-md text-secondary">업무 현황</h3>
+</div>
+<div class="section-body p-sm space-y-sm">
+<div class="sec-text-row bg-surface-container-highest/50 p-2 rounded border border-outline-variant flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">report</span>
+<p class="text-body-sm">최근 6개월간 고소작업 <span class="font-bold">320건</span> 수행 완료</p>
+</div>
+<table class="w-full text-left text-body-sm">
+<thead class="bg-surface-container-highest">
+<tr>
+<th class="p-2 font-bold">구분</th>
+<th class="p-2 font-bold">건수</th>
+<th class="p-2 font-bold">비율</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr>
+<td class="p-2">고소작업</td>
+<td class="p-2">320</td>
+<td class="p-2">100%</td>
+</tr>
+<tr>
+<td class="p-2">안전대 착용</td>
+<td class="p-2">250</td>
+<td class="p-2 text-secondary">78%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Section 3: Problems -->
+<div class="report-card section-card glass-panel rounded-xl border-l-4 border-outline-variant" data-section-id="sec3" data-section-style="plain">
+<div class="flex items-center gap-2 p-sm bg-surface-container-highest/40 rounded-t-lg">
+<span class="w-6 h-6 bg-error text-on-error text-[12px] font-bold flex items-center justify-center rounded">3</span>
+<span class="material-symbols-outlined text-error text-[20px]">warning</span>
+<h3 class="section-title font-title-md text-error">문제점</h3>
+</div>
+<div class="section-body p-sm text-body-sm text-on-surface-variant space-y-1">
+<p class="sec-text-row">1. 작업발판 고정 미흡 및 구조 결함</p>
+<p class="sec-text-row">2. 안전난간 일부 미설치 구간 존재</p>
+<p class="sec-text-row">3. 교육 이수율 저조 및 현장 인식 부족</p>
+</div>
+</div>
+</div>
+<!-- Column Right -->
+<div id="pv-col-right" class="space-y-md">
+<!-- Section 5: Expected Effects (Chart) -->
+<div class="report-card section-card glass-panel rounded-xl border-l-4 border-outline-variant overflow-hidden" data-section-id="sec5" data-section-style="plain">
+<div class="flex items-center gap-2 p-sm bg-surface-container-highest/40 rounded-t-lg">
+<span class="w-6 h-6 bg-tertiary text-on-tertiary text-[12px] font-bold flex items-center justify-center rounded">5</span>
+<span class="material-symbols-outlined text-tertiary text-[20px]">trending_down</span>
+<h3 class="section-title font-title-md text-tertiary">기대효과</h3>
+</div>
+<div class="section-body p-sm">
+<div class="sec-text-row mb-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-[18px]">verified</span>
+<p class="text-body-sm font-bold text-on-surface">추락재해 50% 이상 감소 기대</p>
+</div>
+<!-- Modern Chart Mockup -->
+<div class="h-48 flex items-end justify-between px-md pb-md relative border-b border-outline-variant mt-xs bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 overflow-hidden">
+<!-- Scan Line Effect -->
+<div class="scan-effect"></div>
+<div class="w-12 relative group flex flex-col justify-end h-full">
+<div class="glitch-text absolute -top-6 left-0 w-full text-center text-xs font-bold text-primary drop-shadow-[0_0_5px_rgba(142,213,255,0.8)]">12</div>
+<div class="animate-bar bar-hover h-32 w-full bg-gradient-to-t from-primary to-secondary rounded-t-lg shadow-[0_0_20px_rgba(142,213,255,0.5)] relative overflow-hidden" style="animation-delay: 0.1s;">
+<div class="absolute inset-0 bg-white/20 h-1 animate-pulse"></div>
+</div>
+<div class="mt-2 text-[10px] text-center w-full absolute top-full text-on-surface-variant">1분기</div>
+</div>
+<div class="w-12 relative group flex flex-col justify-end h-full">
+<div class="glitch-text absolute -top-6 left-0 w-full text-center text-xs font-bold text-primary drop-shadow-[0_0_5px_rgba(142,213,255,0.8)]">8</div>
+<div class="animate-bar bar-hover h-24 w-full bg-gradient-to-t from-primary to-secondary rounded-t-lg shadow-[0_0_20px_rgba(142,213,255,0.5)] relative overflow-hidden" style="animation-delay: 0.25s;">
+<div class="absolute inset-0 bg-white/20 h-1 animate-pulse"></div>
+</div>
+<div class="mt-2 text-[10px] text-center w-full absolute top-full text-on-surface-variant">2분기</div>
+</div>
+<div class="w-12 relative group flex flex-col justify-end h-full">
+<div class="glitch-text absolute -top-6 left-0 w-full text-center text-xs font-bold text-secondary drop-shadow-[0_0_5px_rgba(78,222,163,0.8)]">5</div>
+<div class="animate-bar bar-hover h-16 w-full bg-gradient-to-t from-secondary to-primary-fixed-dim rounded-t-lg shadow-[0_0_20px_rgba(78,222,163,0.5)] relative overflow-hidden" style="animation-delay: 0.4s;">
+<div class="absolute inset-0 bg-white/20 h-1 animate-pulse"></div>
+</div>
+<div class="mt-2 text-[10px] text-center w-full absolute top-full text-on-surface-variant">3분기</div>
+</div>
+<div class="w-12 relative group flex flex-col justify-end h-full">
+<div class="glitch-text absolute -top-6 left-0 w-full text-center text-xs font-bold text-tertiary drop-shadow-[0_0_8px_rgba(255,191,158,1)]">3</div>
+<div class="animate-bar bar-hover h-8 w-full bg-gradient-to-t from-tertiary to-tertiary-container rounded-t-lg shadow-[0_0_25px_rgba(255,151,93,0.6)] relative overflow-hidden border border-tertiary/50" style="animation-delay: 0.55s;">
+<div class="absolute inset-0 bg-white/30 h-1 animate-pulse"></div>
+</div>
+<div class="mt-2 text-[10px] text-center w-full absolute top-full text-on-surface-variant font-bold">목표치</div>
+</div>
+<!-- Chart Gridlines -->
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: linear-gradient(rgb(142, 213, 255) 1px, transparent 1px), linear-gradient(90deg, rgb(142, 213, 255) 1px, transparent 1px); background-size: 20px 20px;"></div>
+</div>
+</div>
+</div>
+<!-- Section 4: Improvement Plan -->
+<div class="report-card section-card glass-panel rounded-xl border-l-4 border-outline-variant" data-section-id="sec4" data-section-style="arrow-green">
+<div class="flex items-center gap-2 p-sm bg-surface-container-highest/40 rounded-t-lg">
+<span class="w-6 h-6 bg-secondary-fixed-dim text-on-secondary text-[12px] font-bold flex items-center justify-center rounded">4</span>
+<span class="material-symbols-outlined text-secondary-fixed-dim text-[20px]">lightbulb</span>
+<h3 class="section-title font-title-md text-secondary-fixed-dim">개선방안</h3>
+</div>
+<div class="section-body p-sm text-body-sm space-y-2">
+<div class="sec-text-row flex items-start gap-2">
+<span class="text-secondary-fixed-dim">▶</span>
+<p class=""><span class="text-secondary-fixed-dim font-bold">개요:</span> 위험요인 제거 + 보호구 강화 2-track 추진</p>
+</div>
+<div class="sec-text-row flex items-start gap-2">
+<span class="text-secondary-fixed-dim">▶</span>
+<p class=""><span class="text-secondary-fixed-dim font-bold">세부계획:</span> 작업발판 일체 점검 및 보강 시행</p>
+</div>
+<div class="sec-text-row flex items-start gap-2">
+<span class="text-secondary-fixed-dim">▶</span>
+<p class="">분기별 추락방지 교육 의무화 실시</p>
+</div>
+</div>
+</div>
+<!-- Section 6: Future Schedule -->
+<div class="report-card section-card glass-panel rounded-xl border-l-4 border-outline-variant" data-section-id="sec6" data-section-style="plain">
+<div class="flex items-center gap-2 p-sm bg-surface-container-highest/40 rounded-t-lg">
+<span class="w-6 h-6 bg-outline text-on-surface text-[12px] font-bold flex items-center justify-center rounded">6</span>
+<span class="material-symbols-outlined text-outline text-[20px]">calendar_month</span>
+<h3 class="section-title font-title-md text-on-surface">향후 계획</h3>
+</div>
+<div class="section-body p-sm text-body-sm space-y-2">
+<div class="flex items-center gap-4">
+<div class="flex-1 text-center bg-surface-container-highest/30 p-2 rounded border border-outline-variant">
+<p class="text-primary font-bold">7월</p>
+<p class="opacity-70 text-[10px]">전수 점검</p>
+</div>
+<div class="flex-1 text-center bg-surface-container-highest/30 p-2 rounded border border-outline-variant">
+<p class="text-secondary font-bold">8월</p>
+<p class="opacity-70 text-[10px]">안전 교육</p>
+</div>
+<div class="flex-1 text-center bg-surface-container-highest/30 p-2 rounded border border-outline-variant">
+<p class="text-tertiary font-bold">9월</p>
+<p class="opacity-70 text-[10px]">성과 평가</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Canvas Footer Info -->
+<div class="h-10 px-lg flex items-center justify-between border-t border-outline-variant bg-surface-container-lowest relative z-10">
+<p class="text-[10px] text-on-surface-variant italic">ⓘ 본 문서는 요약본입니다. 상세 내용은 원본 보고서를 참조하십시오.</p>
+<p class="text-[10px] text-on-surface-variant font-bold tracking-widest">SAFETY INTELLIGENCE SYSTEM v4.0</p>
+</div>
+</div>
+</main>
+</div>
+<!-- Interactive FAB (only on dashboard context) -->
+<button id="fab-btn" class="fab-btn fixed bottom-gutter right-gutter w-14 h-14 bg-primary-container text-on-primary-container rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 neon-glow-primary z-50" title="섹션 카드 추가">
+<span class="material-symbols-outlined text-[28px]">add</span>
+</button>
+<script>
+    "use strict";
+    (function () {
+        const STORAGE_KEY = "safety-a3-summary-state-v3";
+
+        const $ = (sel, root = document) => root.querySelector(sel);
+        const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+        const canvas = $("#a3-canvas");
+        const main = $("main");
+
+        // Capture pristine defaults (BEFORE any runtime injection) so 초기화 fully restores.
+        const DEFAULT_CANVAS_HTML = canvas.innerHTML;
+        const DEFAULT_FIELDS = {
+            title: "옥외작업장 추락재해 예방 개선방안",
+            dept: "안전관리팀",
+            date: "2026. 6. 8.",
+        };
+
+        // KPI accent tones cycled for new cards.
+        const KPI_TONES = ["text-primary", "text-secondary", "text-tertiary-container", "text-on-surface", "text-secondary-fixed-dim", "text-tertiary"];
+
+        const ed = {
+            title: $("#ed-title"),
+            dept: $("#ed-dept"),
+            date: $("#ed-date"),
+        };
+
+        function escapeHTML(s) {
+            const d = document.createElement("div");
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        function formatDateForPreview(raw) {
+            const m = String(raw).match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+            if (!m) return raw;
+            const pad = (n) => String(n).padStart(2, "0");
+            return `${m[1]}. ${pad(m[2])}. ${pad(m[3])}.`;
+        }
+
+        // ---- Header field bindings (F3) ------------------------------------
+        function syncFromEditor() {
+            const setText = (sel, v) => { const el = $(sel); if (el) el.textContent = v; };
+            setText("#pv-title", ed.title.value);
+            setText("#pv-dept", ed.dept.value);
+            setText("#pv-date", formatDateForPreview(ed.date.value));
+        }
+        ["title", "dept", "date"].forEach((k) => {
+            ed[k].addEventListener("input", () => { syncFromEditor(); scheduleSave(); });
+        });
+
+        // ---- Section text rendering (every output section is editable) ------
+        // Build one text row in the style of the given section.
+        function makeRow(style, line) {
+            let el;
+            if (style === "dot-primary") {
+                el = document.createElement("div");
+                el.className = "sec-text-row flex items-start gap-2";
+                el.innerHTML = `<div class="w-1.5 h-1.5 bg-primary rounded-full mt-2.5"></div><p class="">${escapeHTML(line)}</p>`;
+            } else if (style === "arrow-green") {
+                el = document.createElement("div");
+                el.className = "sec-text-row flex items-start gap-2";
+                el.innerHTML = `<span class="text-secondary-fixed-dim">▶</span><p class="">${escapeHTML(line)}</p>`;
+            } else {
+                el = document.createElement("p");
+                el.className = "sec-text-row";
+                el.textContent = line;
+            }
+            return el;
+        }
+
+        // Re-render a section's text body from text, preserving tables/charts/grids.
+        function renderSectionBody(card, text) {
+            const body = card.querySelector(".section-body");
+            if (!body) return;
+            const style = card.dataset.sectionStyle || "plain";
+            const lines = text.split("\n").map((l) => l.replace(/^\s*[-•▶]\s?/, "").trim()).filter((l) => l.length > 0);
+            $$(":scope > .sec-text-row", body).forEach((n) => n.remove());
+            const frag = document.createDocumentFragment();
+            lines.forEach((line) => frag.appendChild(makeRow(style, line)));
+            body.insertBefore(frag, body.firstChild);
+            enableInlineEditing();
+        }
+
+        // Read the plain text of a section's current rows (for the editor textarea).
+        function readSectionLines(card) {
+            const body = card.querySelector(".section-body");
+            if (!body) return [];
+            return $$(":scope > .sec-text-row", body).map((r) => {
+                const p = r.querySelector("p");
+                return ((p ? p.textContent : r.textContent) || "").trim();
+            }).filter(Boolean);
+        }
+
+        // Generate an editor card per output section, kept in sync both ways.
+        function buildSectionEditor() {
+            const list = $("#ed-sections");
+            if (!list) return;
+            list.innerHTML = "";
+            $$("#a3-canvas .section-card").forEach((card) => {
+                const titleEl = card.querySelector(".section-title");
+                const titleText = titleEl ? titleEl.textContent : "섹션";
+                const lines = readSectionLines(card);
+
+                const edCard = document.createElement("div");
+                edCard.className = "bg-surface-container-highest/30 border border-outline-variant rounded-xl p-sm space-y-xs";
+                edCard.innerHTML =
+                    `<div class="flex items-center gap-2">` +
+                    `<span class="material-symbols-outlined text-[20px] text-primary">edit_note</span>` +
+                    `<input class="sec-ed-title bg-transparent font-body-lg font-bold text-on-surface border-b border-outline-variant focus:outline-none flex-1 min-w-0" type="text"/>` +
+                    `<button class="sec-ed-del text-error hover:scale-110 transition-transform" title="섹션 삭제"><span class="material-symbols-outlined text-[18px]">delete</span></button>` +
+                    `</div>` +
+                    `<textarea class="sec-ed-text w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-2 text-body-sm h-24 scrollbar-hide" placeholder="한 줄에 한 항목씩 입력"></textarea>` +
+                    `<div class="flex gap-2">` +
+                    `<button class="sec-ed-table flex-1 py-1 text-[12px] bg-surface-container-highest rounded border border-outline-variant">표 추가</button>` +
+                    `<button class="sec-ed-graph flex-1 py-1 text-[12px] bg-surface-container-highest rounded border border-outline-variant">그래프 추가</button>` +
+                    `</div>`;
+                const titleInput = edCard.querySelector(".sec-ed-title");
+                const ta = edCard.querySelector(".sec-ed-text");
+                titleInput.value = titleText;
+                ta.value = lines.join("\n");
+
+                titleInput.addEventListener("input", () => {
+                    if (titleEl) titleEl.textContent = titleInput.value;
+                    scheduleSave();
+                });
+                ta.addEventListener("input", () => { renderSectionBody(card, ta.value); scheduleSave(); });
+                edCard.querySelector(".sec-ed-table").addEventListener("click", () => insertTable(card.querySelector(".section-body")));
+                edCard.querySelector(".sec-ed-graph").addEventListener("click", () => insertGraph(card.querySelector(".section-body")));
+                edCard.querySelector(".sec-ed-del").addEventListener("click", () => { card.remove(); buildSectionEditor(); scheduleSave(); });
+                list.appendChild(edCard);
+            });
+        }
+
+        // ---- #1 Removable cards (KPI + sections) ---------------------------
+        function wireReportCards() {
+            $$(".report-card", canvas).forEach((card) => {
+                let del = Array.from(card.children).find((c) => c.classList && c.classList.contains("card-del"));
+                if (!del) {
+                    del = document.createElement("button");
+                    del.className = "card-del";
+                    del.setAttribute("contenteditable", "false");
+                    del.setAttribute("title", "삭제");
+                    del.innerHTML = '<span class="material-symbols-outlined text-[16px]">close</span>';
+                    card.appendChild(del);
+                }
+                del.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const wasSection = card.classList.contains("section-card");
+                    card.remove();
+                    buildKpiEditor();       // refresh in case a KPI card was removed
+                    if (wasSection) buildSectionEditor();
+                    scheduleSave();
+                };
+            });
+        }
+
+        // ---- #1 Dynamic KPI editor <-> preview grid ------------------------
+        function buildKpiEditor() {
+            const list = $("#ed-kpi-list");
+            if (!list) return;
+            list.innerHTML = "";
+            const cards = $$("#pv-kpi-grid > .report-card");
+            cards.forEach((card) => {
+                const labelEl = card.querySelector(".kpi-label");
+                const valEl = card.querySelector(".kpi-value");
+                const unitEl = card.querySelector(".kpi-unit");
+                const row = document.createElement("div");
+                row.className = "flex gap-2 items-center";
+                row.innerHTML =
+                    `<input class="kpi-ed-val w-14 bg-surface-container-lowest border border-outline-variant rounded px-2 py-1 text-center" type="text"/>` +
+                    `<input class="kpi-ed-label flex-1 bg-surface-container-lowest border border-outline-variant rounded px-2 py-1 text-body-sm" type="text"/>` +
+                    `<input class="kpi-ed-unit w-10 bg-surface-container-lowest border border-outline-variant rounded px-2 py-1 text-center text-body-sm" type="text"/>` +
+                    `<button class="kpi-ed-del text-error p-1 hover:scale-110 transition-transform" title="삭제"><span class="material-symbols-outlined text-[18px]">delete</span></button>`;
+                const v = row.querySelector(".kpi-ed-val");
+                const l = row.querySelector(".kpi-ed-label");
+                const u = row.querySelector(".kpi-ed-unit");
+                v.value = valEl ? valEl.textContent : "";
+                l.value = labelEl ? labelEl.textContent : "";
+                u.value = unitEl ? unitEl.textContent : "";
+                v.addEventListener("input", () => { if (valEl) valEl.textContent = v.value; scheduleSave(); });
+                l.addEventListener("input", () => { if (labelEl) labelEl.textContent = l.value; scheduleSave(); });
+                u.addEventListener("input", () => { if (unitEl) unitEl.textContent = u.value; scheduleSave(); });
+                row.querySelector(".kpi-ed-del").addEventListener("click", () => {
+                    card.remove();
+                    buildKpiEditor();
+                    scheduleSave();
+                });
+                list.appendChild(row);
+            });
+        }
+
+        function addKpi() {
+            const grid = $("#pv-kpi-grid");
+            const idx = $$("#pv-kpi-grid > .report-card").length;
+            const tone = KPI_TONES[idx % KPI_TONES.length];
+            const card = document.createElement("div");
+            card.className = "report-card glass-panel p-md rounded-xl text-center neon-glow";
+            card.innerHTML =
+                `<p class="kpi-label text-on-surface-variant font-label-caps text-label-caps mb-2">새 지표</p>` +
+                `<div class="flex items-baseline justify-center gap-1">` +
+                `<span class="kpi-value text-display-lg ${tone} font-black">0</span>` +
+                `<span class="kpi-unit text-body-lg ${tone} opacity-60">건</span>` +
+                `</div>`;
+            grid.appendChild(card);
+            wireReportCards();
+            bindCardHover();
+            buildKpiEditor();
+            scheduleSave();
+        }
+        $("#add-kpi-btn").addEventListener("click", addKpi);
+
+        // ---- Direct inline editing (F4) ------------------------------------
+        const BOUND_IDS = new Set(["pv-title", "pv-dept", "pv-date"]);
+        function enableInlineEditing() {
+            $$("p, h3, td, th, span.glitch-text", canvas).forEach((el) => {
+                if (el.id && BOUND_IDS.has(el.id)) return;
+                if (el.closest("#pv-kpi-grid")) return;        // KPIs edited via structured rows
+                if (el.closest(".sec-text-row")) return;       // section text is textarea-driven
+                if (el.classList.contains("section-title")) return; // titles edited via editor input
+                if (el.classList.contains("material-symbols-outlined")) return;
+                if (el.dataset.editBound) return;
+                el.setAttribute("contenteditable", "true");
+                el.setAttribute("spellcheck", "false");
+                el.dataset.editBound = "1";
+                el.addEventListener("input", scheduleSave);
+            });
+        }
+
+        // ---- Logo upload (F1) ----------------------------------------------
+        $("#logo-upload").addEventListener("change", (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = $("#pv-logo");
+                if (img) { img.src = ev.target.result; img.classList.remove("opacity-80"); }
+                scheduleSave();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ---- Zoom slider + Fit to screen (#6) ------------------------------
+        const slider = $("#zoom-slider");
+        const zoomLabel = $("#zoom-label");
+        function applyZoom(value) {
+            canvas.style.transform = `scale(${value / 100})`;
+            canvas.style.transformOrigin = "top center";
+            zoomLabel.textContent = `${value}%`;
+        }
+        slider.addEventListener("input", (e) => applyZoom(e.target.value));
+        $("#fit-btn").addEventListener("click", () => {
+            const prev = canvas.style.transform;
+            canvas.style.transform = "none";
+            const availW = main.clientWidth - 80;
+            const availH = main.clientHeight - 80;
+            const natW = canvas.offsetWidth || 1320;
+            const natH = canvas.offsetHeight || natW / 1.414;
+            canvas.style.transform = prev;
+            let pct = Math.floor(Math.min(availW / natW, availH / natH) * 100);
+            pct = Math.max(50, Math.min(200, pct));
+            slider.value = pct;
+            applyZoom(pct);
+        });
+
+        // ---- Save / Load / Reset (JSON) ------------------------------------
+        function collectState() {
+            return {
+                version: 2,
+                fields: { title: ed.title.value, dept: ed.dept.value, date: ed.date.value },
+                logoSrc: $("#pv-logo") ? $("#pv-logo").src : "",
+                canvasHTML: canvas.innerHTML,
+                zoom: slider.value,
+            };
+        }
+        function applyState(state) {
+            if (!state) return;
+            const f = state.fields || {};
+            Object.keys(DEFAULT_FIELDS).forEach((k) => { if (ed[k] && typeof f[k] === "string") ed[k].value = f[k]; });
+            if (typeof state.canvasHTML === "string" && state.canvasHTML.trim()) {
+                canvas.innerHTML = state.canvasHTML;
+            }
+            if (state.logoSrc) { const img = $("#pv-logo"); if (img) img.src = state.logoSrc; }
+            // Re-attach all runtime behaviours to the (replaced) DOM.
+            $$("#a3-canvas [contenteditable]", document).forEach((el) => delete el.dataset.editBound);
+            enableInlineEditing();
+            wireReportCards();
+            bindCardHover();
+            buildKpiEditor();
+            buildSectionEditor();
+            syncFromEditor();
+            if (state.zoom) { slider.value = state.zoom; applyZoom(state.zoom); }
+        }
+
+        let saveTimer = null;
+        function scheduleSave() {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => {
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState())); } catch (err) {}
+            }, 400);
+        }
+
+        $("#save-btn").addEventListener("click", () => {
+            const data = JSON.stringify(collectState(), null, 2);
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            const safeTitle = (ed.title.value || "safety-report").replace(/[\\/:*?"<>|]+/g, "_").slice(0, 60);
+            a.href = url; a.download = `${safeTitle}.json`;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+        });
+        $("#load-btn").addEventListener("click", () => $("#load-input").click());
+        $("#load-input").addEventListener("change", (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try { applyState(JSON.parse(ev.target.result)); scheduleSave(); }
+                catch (err) { alert("불러오기 실패: 올바른 JSON 파일이 아닙니다."); }
+            };
+            reader.readAsText(file);
+            e.target.value = "";
+        });
+        $("#reset-btn").addEventListener("click", () => {
+            if (!confirm("모든 내용을 초기 상태로 되돌립니다. 계속할까요?")) return;
+            canvas.innerHTML = DEFAULT_CANVAS_HTML;
+            Object.keys(DEFAULT_FIELDS).forEach((k) => { if (ed[k]) ed[k].value = DEFAULT_FIELDS[k]; });
+            extraSectionCount = 0;
+            enableInlineEditing();
+            wireReportCards();
+            bindCardHover();
+            buildKpiEditor();
+            buildSectionEditor();
+            syncFromEditor();
+            slider.value = 100; applyZoom(100);
+            try { localStorage.removeItem(STORAGE_KEY); } catch (err) {}
+            runChartIntro();
+        });
+
+        // ---- Print / PDF (F6, #3) ------------------------------------------
+        function printDoc() {
+            const restore = canvas.style.transform;
+            canvas.style.transform = "none";
+            const after = () => { canvas.style.transform = restore; window.removeEventListener("afterprint", after); };
+            window.addEventListener("afterprint", after);
+            window.print();
+        }
+        $("#print-btn").addEventListener("click", printDoc);
+
+        // ---- Table / Graph insertion (shared by all sections) --------------
+        function insertTable(body) {
+            if (!body) return;
+            const tbl = document.createElement("table");
+            tbl.className = "w-full text-left text-body-sm mt-2";
+            tbl.innerHTML =
+                `<thead class="bg-surface-container-highest"><tr>` +
+                `<th class="p-2 font-bold">구분</th><th class="p-2 font-bold">값</th></tr></thead>` +
+                `<tbody class="divide-y divide-outline-variant">` +
+                `<tr><td class="p-2">항목 1</td><td class="p-2 text-secondary">-</td></tr>` +
+                `<tr><td class="p-2">항목 2</td><td class="p-2 text-secondary">-</td></tr></tbody>`;
+            body.appendChild(tbl);
+            enableInlineEditing();
+            scheduleSave();
+        }
+        function insertGraph(body) {
+            if (!body) return;
+            const wrap = document.createElement("div");
+            wrap.className = "h-24 flex items-end justify-between gap-2 mt-2 px-2 pb-1 bg-white/5 rounded-lg border border-white/10";
+            [40, 70, 55, 90].forEach((h, i) => {
+                const bar = document.createElement("div");
+                bar.className = "animate-bar bar-hover flex-1 bg-gradient-to-t from-primary to-secondary rounded-t-lg shadow-[0_0_12px_rgba(142,213,255,0.4)]";
+                bar.style.height = h + "%";
+                bar.style.animationDelay = (0.1 * i) + "s";
+                wrap.appendChild(bar);
+            });
+            body.appendChild(wrap);
+            scheduleSave();
+        }
+        // ---- #2 Add section — same structure as default sections ----------
+        let extraSectionCount = 0;
+        function addSection() {
+            extraSectionCount += 1;
+            const n = extraSectionCount;
+
+            const pv = document.createElement("div");
+            pv.className = "report-card section-card glass-panel rounded-xl border-l-4 border-outline-variant";
+            pv.dataset.sectionId = "extra-" + n;
+            pv.dataset.sectionStyle = "dot-primary";
+            pv.innerHTML =
+                `<div class="flex items-center gap-2 p-sm bg-surface-container-highest/40 rounded-t-lg">` +
+                `<span class="w-6 h-6 bg-primary-fixed-dim text-on-primary text-[12px] font-bold flex items-center justify-center rounded">+</span>` +
+                `<span class="material-symbols-outlined text-primary-fixed-dim text-[20px]">edit_note</span>` +
+                `<h3 class="section-title font-title-md text-primary-fixed-dim">추가 섹션 ${n}</h3>` +
+                `</div>` +
+                `<div class="section-body p-sm text-body-sm space-y-1 text-on-surface-variant"></div>`;
+            // Append to the shorter column to keep the two-column layout balanced.
+            const left = $("#pv-col-left"), right = $("#pv-col-right");
+            const target = (left.offsetHeight <= right.offsetHeight) ? left : right;
+            target.appendChild(pv);
+
+            renderSectionBody(pv, "- 새 항목을 입력하세요");
+            wireReportCards();
+            bindCardHover();
+            buildSectionEditor();   // regenerate editor list incl. the new section
+            scheduleSave();
+        }
+        $("#add-section-btn").addEventListener("click", addSection);
+        $("#fab-btn").addEventListener("click", addSection);
+
+        // ---- Chart count-up intro & card hover (from original design) ------
+        function runChartIntro() {
+            $$(".glitch-text", canvas).forEach((text) => {
+                const finalValue = parseInt(text.textContent, 10);
+                if (isNaN(finalValue) || finalValue <= 0) return;
+                let startValue = 0;
+                const stepTime = Math.max(20, Math.abs(Math.floor(1000 / finalValue)));
+                const timer = setInterval(() => {
+                    startValue += 1;
+                    text.textContent = startValue;
+                    if (startValue >= finalValue) { text.textContent = finalValue; clearInterval(timer); }
+                }, stepTime);
+            });
+        }
+        function bindCardHover() {
+            $$(".glass-panel", canvas).forEach((card) => {
+                if (card.dataset.hoverBound) return;
+                card.dataset.hoverBound = "1";
+                card.addEventListener("mouseenter", () => card.classList.add("neon-glow-primary"));
+                card.addEventListener("mouseleave", () => card.classList.remove("neon-glow-primary"));
+            });
+        }
+
+        // ---- Init -----------------------------------------------------------
+        function init() {
+            enableInlineEditing();
+            wireReportCards();
+            bindCardHover();
+            buildKpiEditor();
+            buildSectionEditor();
+            applyZoom(slider.value);
+
+            let restored = false;
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) { applyState(JSON.parse(saved)); restored = true; }
+            } catch (err) {}
+            if (!restored) syncFromEditor();
+            runChartIntro();
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body></html>

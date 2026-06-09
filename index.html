@@ -103,8 +103,8 @@
         .glass-panel { backdrop-filter: blur(20px); background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(51, 65, 85, 0.5); }
         .neon-glow { box-shadow: 0 0 15px rgba(142, 213, 255, 0.2); }
         .neon-glow-primary { box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
-        /* #6 Larger output preview */
-        .a3-preview-container { aspect-ratio: 1.414 / 1; max-width: 1320px; margin: 0 auto; }
+        /* #6 Larger output preview — height follows content so no box is clipped */
+        .a3-preview-container { max-width: 1320px; margin: 0 auto; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .custom-slider { -webkit-appearance: none; height: 4px; border-radius: 2px; background: #334155; }
         .custom-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #8ed5ff; cursor: pointer; border: 2px solid #0f172a; box-shadow: 0 0 5px rgba(142, 213, 255, 0.5); }
@@ -179,25 +179,26 @@
         .report-card:hover .card-del { opacity: 1; }
         .card-del:hover { background: rgba(255, 180, 171, 0.34); }
 
-        /* #3 Print / PDF — A3 landscape, full content (no bottom clipping) */
+        /* #3 Print / PDF — fit the ENTIRE report onto a single A3 landscape page */
         @media print {
-            @page { size: A3 landscape; margin: 8mm; }
-            html, body { overflow: visible !important; height: auto !important; background: #ffffff !important; }
+            @page { size: A3 landscape; margin: 0; }
+            html, body { overflow: visible !important; height: auto !important; background: #131b2e !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             header, aside, .fab-btn, .card-del { display: none !important; }
             .flex.h-screen { display: block !important; height: auto !important; padding: 0 !important; }
-            main { margin: 0 !important; padding: 0 !important; overflow: visible !important; height: auto !important; display: block !important; }
+            /* main becomes a one-page frame; the canvas is scaled to fit inside it (set inline by printDoc) */
+            main {
+                margin: 0 !important; padding: 0 !important; display: block !important;
+                width: 100% !important; height: 1122.5px !important;
+                overflow: hidden !important; background: #131b2e !important;
+            }
             .a3-preview-container {
+                transform-origin: top left;
                 aspect-ratio: auto !important;
-                height: auto !important;
-                min-height: 0 !important;
                 max-width: none !important;
-                width: 100% !important;
                 margin: 0 !important;
-                transform: none !important;
                 box-shadow: none !important;
                 border-radius: 0 !important;
-                overflow: visible !important;
             }
             .scan-effect { display: none !important; }
             [contenteditable="true"]:hover, [contenteditable="true"]:focus { outline: none !important; }
@@ -879,9 +880,24 @@
 
         // ---- Print / PDF (F6, #3) ------------------------------------------
         function printDoc() {
-            const restore = canvas.style.transform;
+            // A3 landscape @96dpi, margin 0: 420mm × 297mm.
+            const PAGE_W = 1587.4, PAGE_H = 1122.5, DESIGN_W = 1320;
+            const saved = { t: canvas.style.transform, w: canvas.style.width, o: canvas.style.transformOrigin };
             canvas.style.transform = "none";
-            const after = () => { canvas.style.transform = restore; window.removeEventListener("afterprint", after); };
+            canvas.style.transformOrigin = "top left";
+            canvas.style.width = DESIGN_W + "px";
+            // Measure the report's natural height, then scale so the whole thing fits one page.
+            const h = canvas.offsetHeight || (DESIGN_W / 1.414);
+            const scale = Math.min(PAGE_W / DESIGN_W, PAGE_H / h);
+            const tx = Math.max(0, (PAGE_W - DESIGN_W * scale) / 2);
+            const ty = Math.max(0, (PAGE_H - h * scale) / 2);
+            canvas.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+            const after = () => {
+                canvas.style.transform = saved.t;
+                canvas.style.width = saved.w;
+                canvas.style.transformOrigin = saved.o;
+                window.removeEventListener("afterprint", after);
+            };
             window.addEventListener("afterprint", after);
             window.print();
         }

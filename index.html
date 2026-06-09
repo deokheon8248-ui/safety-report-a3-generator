@@ -206,6 +206,48 @@
     </style>
 </head>
 <body class="bg-surface text-on-surface overflow-hidden">
+<!-- ===== Password Gate (covers everything until correct password) ===== -->
+<div id="auth-overlay" class="fixed inset-0 z-[200] flex items-center justify-center bg-surface">
+<div class="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/10 blur-[120px] rounded-full -mr-20 -mt-20"></div>
+<div class="absolute bottom-0 left-0 w-1/2 h-1/2 bg-secondary/10 blur-[120px] rounded-full -ml-20 -mb-20"></div>
+<div class="glass-panel relative z-10 w-full max-w-sm mx-4 p-lg rounded-xl neon-glow-primary text-center">
+<span class="material-symbols-outlined text-primary text-[48px] mb-2">lock</span>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface mb-1">접근 제한</h2>
+<p class="text-on-surface-variant text-body-sm mb-md">서비스를 이용하려면 비밀번호를 입력하세요.</p>
+<input id="auth-input" type="password" autocomplete="off" placeholder="비밀번호"
+class="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-sm py-2.5 text-body-lg text-center tracking-widest mb-2"/>
+<p id="auth-error" class="hidden text-error text-body-sm mb-2">비밀번호가 올바르지 않습니다.</p>
+<button id="auth-btn" class="w-full py-2.5 bg-primary-container text-on-primary-container rounded-lg font-bold font-body-lg active:scale-95 duration-200 shadow-lg hover:shadow-[0_0_20px_rgba(56,189,248,0.4)] transition-all">입장하기</button>
+</div>
+</div>
+<!-- ===== Safety Guidebook Modal (GPT-powered) ===== -->
+<div id="guide-modal" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+<div class="glass-panel relative w-full max-w-2xl max-h-[85vh] flex flex-col rounded-xl neon-glow-primary overflow-hidden">
+<div class="flex items-center justify-between p-sm border-b border-outline-variant bg-surface-container-highest/40">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">menu_book</span>
+<h3 class="font-title-md text-title-md font-bold text-secondary">재해유형별 안전조치 가이드북</h3>
+</div>
+<button id="guide-close" class="p-1 text-on-surface-variant hover:text-on-surface hover:scale-110 transition-all" title="닫기">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-md overflow-y-auto scrollbar-hide">
+<p class="text-on-surface-variant text-body-sm mb-2">재해유형을 선택하거나 직접 입력한 뒤 가이드북을 생성하세요.</p>
+<div id="guide-chips" class="flex flex-wrap gap-2 mb-sm"></div>
+<div class="flex gap-2 mb-md">
+<input id="guide-input" type="text" placeholder="예: 추락, 감전, 화재, 협착 ..."
+class="flex-1 bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-sm py-2 text-body-lg"/>
+<button id="guide-gen" class="flex items-center gap-1.5 px-md py-2 bg-primary-container text-on-primary-container rounded-lg font-bold font-body-lg active:scale-95 duration-200 shadow-lg whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span> 생성
+</button>
+</div>
+<div id="guide-result" class="text-body-lg text-on-surface-variant leading-relaxed min-h-[120px]">
+<p class="opacity-60 text-center py-lg">재해유형을 선택하고 <b>생성</b>을 누르면 GPT가 안전조치 방안을 작성합니다.</p>
+</div>
+</div>
+</div>
+</div>
 <!-- Top AppBar Component -->
 <header class="fixed top-0 z-50 w-full h-16 bg-surface-container-low flex justify-between items-center px-sm py-xs border-b border-outline-variant shadow-md">
 <div class="flex items-center gap-md">
@@ -228,6 +270,9 @@
 <input id="load-input" class="hidden" type="file" accept="application/json,.json"/>
 <button id="reset-btn" class="flex items-center gap-1.5 px-sm py-2 bg-surface-container-highest text-on-surface rounded-lg font-body-sm hover:shadow-[0_0_15px_rgba(142,213,255,0.3)] transition-all">
 <span class="material-symbols-outlined text-[20px]">refresh</span> 초기화
+                </button>
+<button id="guide-btn" class="flex items-center gap-1.5 px-sm py-2 bg-secondary-container text-on-secondary-container rounded-lg font-body-sm hover:shadow-[0_0_15px_rgba(71,229,164,0.3)] transition-all">
+<span class="material-symbols-outlined text-[20px]">menu_book</span> 안전 가이드북
                 </button>
 <button id="print-btn" class="flex items-center gap-1.5 px-md py-2 bg-primary-container text-on-primary-container rounded-lg font-bold font-body-lg active:scale-95 duration-200 shadow-lg">
 <span class="material-symbols-outlined text-[20px]">print</span> 인쇄 / PDF 저장
@@ -1009,6 +1054,163 @@
         } else {
             init();
         }
+    })();
+    </script>
+<!-- ===== Password Gate + GPT Safety Guidebook ===== -->
+<script>
+    "use strict";
+    (function () {
+        // ---------- Password gate ----------
+        const AUTH_PASSWORD = "14100698";
+        const overlay = document.getElementById("auth-overlay");
+        const authInput = document.getElementById("auth-input");
+        const authBtn = document.getElementById("auth-btn");
+        const authErr = document.getElementById("auth-error");
+
+        function tryAuth() {
+            if (authInput.value === AUTH_PASSWORD) {
+                overlay.style.display = "none";
+            } else {
+                authErr.classList.remove("hidden");
+                authInput.value = "";
+                authInput.focus();
+            }
+        }
+        authBtn.addEventListener("click", tryAuth);
+        authInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); tryAuth(); } });
+        authInput.focus();
+
+        // ---------- API key loading (from .env, with manual fallback) ----------
+        let apiKeyCache = null;
+        async function getApiKey() {
+            if (apiKeyCache) return apiKeyCache;
+            const stored = sessionStorage.getItem("GPT_API_KEY");
+            if (stored) { apiKeyCache = stored; return apiKeyCache; }
+            try {
+                const r = await fetch(".env", { cache: "no-store" });
+                if (r.ok) {
+                    const txt = await r.text();
+                    const m = txt.match(/^\s*GPT_API_KEY\s*=\s*(.+)\s*$/m);
+                    if (m && m[1].trim()) {
+                        apiKeyCache = m[1].trim().replace(/^["']|["']$/g, "");
+                    }
+                }
+            } catch (err) { /* file:// or fetch blocked — fall back to prompt */ }
+            if (!apiKeyCache) {
+                const entered = prompt(".env 의 GPT_API_KEY 를 불러오지 못했습니다.\nOpenAI API 키를 직접 입력하세요:");
+                if (entered && entered.trim()) apiKeyCache = entered.trim();
+            }
+            if (apiKeyCache) sessionStorage.setItem("GPT_API_KEY", apiKeyCache);
+            return apiKeyCache;
+        }
+
+        // ---------- Minimal markdown -> HTML for the guide output ----------
+        function escapeHTML(s) {
+            const d = document.createElement("div"); d.textContent = s; return d.innerHTML;
+        }
+        function renderMarkdown(md) {
+            const lines = md.split("\n");
+            let html = "", listType = null;
+            const closeList = () => { if (listType) { html += `</${listType}>`; listType = null; } };
+            const inline = (t) => escapeHTML(t)
+                .replace(/\*\*(.+?)\*\*/g, '<strong class="text-on-surface font-bold">$1</strong>')
+                .replace(/`(.+?)`/g, '<code class="px-1 rounded bg-surface-container-highest text-primary">$1</code>');
+            lines.forEach((raw) => {
+                const line = raw.trimEnd();
+                let m;
+                if ((m = line.match(/^\s*#{1,6}\s+(.+)/))) {
+                    closeList();
+                    html += `<h4 class="font-title-md text-secondary font-bold mt-md mb-1">${inline(m[1])}</h4>`;
+                } else if ((m = line.match(/^\s*\d+\.\s+(.+)/))) {
+                    if (listType !== "ol") { closeList(); html += '<ol class="list-decimal pl-6 space-y-1 mb-2">'; listType = "ol"; }
+                    html += `<li>${inline(m[1])}</li>`;
+                } else if ((m = line.match(/^\s*[-*•]\s+(.+)/))) {
+                    if (listType !== "ul") { closeList(); html += '<ul class="list-disc pl-6 space-y-1 mb-2">'; listType = "ul"; }
+                    html += `<li>${inline(m[1])}</li>`;
+                } else if (line.trim() === "") {
+                    closeList();
+                } else {
+                    closeList();
+                    html += `<p class="mb-2">${inline(line)}</p>`;
+                }
+            });
+            closeList();
+            return html;
+        }
+
+        // ---------- GPT call ----------
+        async function fetchGuide(type) {
+            const key = await getApiKey();
+            if (!key) throw new Error("API 키가 없어 요청을 진행할 수 없습니다.");
+            const res = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    temperature: 0.5,
+                    messages: [
+                        { role: "system", content: "당신은 대한민국 산업안전보건 전문가입니다. 재해유형별 안전조치 방안을 현장 실무자가 바로 활용할 수 있도록 한국어로 명확하고 구체적으로 작성합니다. 마크다운 형식(제목, 번호 목록, 굵은 글씨)을 사용하세요." },
+                        { role: "user", content: `재해유형: "${type}"\n\n위 재해유형에 대한 안전조치 가이드북을 작성해줘. 다음 항목을 반드시 포함해줘:\n1. 재해 개요 및 주요 발생 원인\n2. 사전 예방 조치\n3. 작업 중 안전수칙\n4. 비상 시 대응 절차\n5. 관련 법규 및 기준 (산업안전보건법 등)\n각 항목을 구체적인 실무 지침으로 작성해줘.` },
+                    ],
+                }),
+            });
+            if (!res.ok) {
+                let detail = "";
+                try { detail = (await res.json()).error?.message || ""; } catch (e) {}
+                throw new Error(`OpenAI API 오류 (${res.status}) ${detail}`);
+            }
+            const data = await res.json();
+            return data.choices && data.choices[0] ? data.choices[0].message.content : "(응답이 비어 있습니다.)";
+        }
+
+        // ---------- Modal wiring ----------
+        const modal = document.getElementById("guide-modal");
+        const guideInput = document.getElementById("guide-input");
+        const guideResult = document.getElementById("guide-result");
+        const PRESETS = ["추락", "낙하", "협착", "감전", "화재·폭발", "질식", "전도(미끄러짐)", "충돌", "붕괴", "중량물 취급"];
+
+        (function buildChips() {
+            const wrap = document.getElementById("guide-chips");
+            PRESETS.forEach((p) => {
+                const b = document.createElement("button");
+                b.className = "px-3 py-1 rounded-full bg-surface-container-highest border border-outline-variant text-body-sm hover:border-primary hover:text-primary transition-colors";
+                b.textContent = p;
+                b.addEventListener("click", () => { guideInput.value = p; generate(); });
+                wrap.appendChild(b);
+            });
+        })();
+
+        async function generate() {
+            const type = (guideInput.value || "").trim();
+            if (!type) { guideInput.focus(); return; }
+            guideResult.innerHTML =
+                `<div class="flex items-center justify-center gap-2 py-lg text-primary">` +
+                `<span class="material-symbols-outlined animate-spin">progress_activity</span>` +
+                `<span>"${escapeHTML(type)}" 재해유형 가이드북 생성 중...</span></div>`;
+            try {
+                const md = await fetchGuide(type);
+                guideResult.innerHTML =
+                    `<div class="flex items-center gap-2 mb-sm pb-2 border-b border-outline-variant">` +
+                    `<span class="material-symbols-outlined text-secondary">verified</span>` +
+                    `<h3 class="font-title-md text-secondary font-bold">${escapeHTML(type)} — 안전조치 가이드북</h3></div>` +
+                    renderMarkdown(md);
+            } catch (err) {
+                guideResult.innerHTML =
+                    `<div class="text-error py-md flex items-start gap-2">` +
+                    `<span class="material-symbols-outlined">error</span>` +
+                    `<div><p class="font-bold mb-1">가이드북 생성 실패</p><p class="text-body-sm">${escapeHTML(err.message)}</p>` +
+                    `<p class="text-body-sm opacity-70 mt-1">.env 파일의 GPT_API_KEY 가 올바른지 확인하세요.</p></div></div>`;
+            }
+        }
+
+        function openModal() { modal.classList.remove("hidden"); guideInput.focus(); }
+        function closeModal() { modal.classList.add("hidden"); }
+        document.getElementById("guide-btn").addEventListener("click", openModal);
+        document.getElementById("guide-close").addEventListener("click", closeModal);
+        document.getElementById("guide-gen").addEventListener("click", generate);
+        guideInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); generate(); } });
+        modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+        document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.classList.contains("hidden")) closeModal(); });
     })();
     </script>
 </body></html>
